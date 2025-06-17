@@ -60,27 +60,25 @@ const tariffs = [
 
 export function PaymentForm({ serviceType }: PaymentFormProps) {
   const [selectedTariff, setSelectedTariff] = useState('business');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingTariff, setProcessingTariff] = useState<string | null>(null);
 
-  const handlePayment = async () => {
-    setIsProcessing(true);
+  const handlePayment = async (tariffId: string) => {
+    setProcessingTariff(tariffId);
     try {
       // Здесь будет интеграция со Stripe
       await new Promise(resolve => setTimeout(resolve, 2000));
       // После успешной оплаты
-      console.log('Payment successful');
+      console.log('Payment successful for tariff:', tariffId);
     } catch (error) {
       console.error('Payment failed:', error);
     } finally {
-      setIsProcessing(false);
+      setProcessingTariff(null);
     }
   };
 
-  const selectedTariffData = tariffs.find(t => t.id === selectedTariff);
-
   return (
     <div className="max-w-6xl mx-auto">
-      {/* Tariff Selection - Horizontal */}
+      {/* Tariff Selection with Payment Buttons */}
       <div className="mb-12">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -97,7 +95,7 @@ export function PaymentForm({ serviceType }: PaymentFormProps) {
               key={tariff.id}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`relative cursor-pointer rounded-xl border-2 p-6 transition-all duration-200 ${
+              className={`relative cursor-pointer rounded-xl border-2 p-6 transition-all duration-200 flex flex-col ${
                 selectedTariff === tariff.id
                   ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -128,7 +126,7 @@ export function PaymentForm({ serviceType }: PaymentFormProps) {
                 </div>
               </div>
 
-              <ul className="space-y-2 mb-4">
+              <ul className="space-y-2 mb-6 flex-grow">
                 {tariff.features.map((feature, index) => (
                   <li key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                     <CheckIcon className="w-4 h-4 text-success-500 mr-2 flex-shrink-0" />
@@ -144,85 +142,36 @@ export function PaymentForm({ serviceType }: PaymentFormProps) {
                   </div>
                 </div>
               )}
+
+              {/* Payment Button - Full Width at Bottom */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePayment(tariff.id);
+                }}
+                disabled={processingTariff === tariff.id}
+                className="w-full btn-primary flex items-center justify-center whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed mt-auto"
+              >
+                {processingTariff === tariff.id ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Обработка...</span>
+                  </div>
+                ) : (
+                  <>
+                    <CreditCardIcon className="w-5 h-5 mr-2" />
+                    Оплатить {formatCurrency(tariff.price)}
+                  </>
+                )}
+              </button>
             </motion.div>
           ))}
         </div>
       </div>
 
-      {/* Payment Form - Centered */}
-      <div className="max-w-md mx-auto">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Оплата
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300">
-            Безопасная оплата через Stripe
-          </p>
-        </div>
-
-        {/* Order Summary */}
-        <div className="card p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Сводка заказа
-          </h3>
-          
-          <div className="space-y-3 mb-6">
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Тариф:</span>
-              <span className="font-medium text-gray-900 dark:text-white">
-                {selectedTariffData?.name}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Минуты:</span>
-              <span className="font-medium text-gray-900 dark:text-white">
-                {formatMinutes(selectedTariffData?.minutes || 0)}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Тип сервиса:</span>
-              <span className="font-medium text-gray-900 dark:text-white">
-                {serviceType === 'incoming' ? 'Входящие звонки' : 'Исходящие звонки'}
-              </span>
-            </div>
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <div className="flex justify-between">
-                <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Итого:
-                </span>
-                <span className="text-lg font-bold text-primary-600 dark:text-primary-400">
-                  {formatCurrency(selectedTariffData?.price || 0)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Payment Button */}
-          <button
-            onClick={handlePayment}
-            disabled={isProcessing}
-            className="w-full btn-primary flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isProcessing ? (
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Обработка платежа...</span>
-              </div>
-            ) : (
-              <>
-                <CreditCardIcon className="w-5 h-5 mr-2" />
-                Оплатить {formatCurrency(selectedTariffData?.price || 0)}
-              </>
-            )}
-          </button>
-
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
-            Нажимая кнопку, вы соглашаетесь с условиями использования
-          </p>
-        </div>
-
-        {/* Security Info */}
-        <div className="bg-success-50 dark:bg-success-900/20 rounded-lg p-4 mt-6">
+      {/* Security Info */}
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-success-50 dark:bg-success-900/20 rounded-lg p-4">
           <div className="flex items-start space-x-3">
             <div className="w-6 h-6 bg-success-100 dark:bg-success-800 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
               <CheckIcon className="w-3 h-3 text-success-600 dark:text-success-400" />

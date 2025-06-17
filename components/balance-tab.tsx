@@ -7,15 +7,21 @@ import {
   CircleStackIcon,
   ArrowUpIcon,
   ArrowDownIcon,
-  ClockIcon 
+  ClockIcon,
+  CheckIcon
 } from '@heroicons/react/24/outline';
 import { useAppStore } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
-export function BalanceTab() {
+interface BalanceTabProps {
+  onComplete?: () => void;
+}
+
+export function BalanceTab({ onComplete }: BalanceTabProps) {
   const { user } = useAppStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Моковые данные для демонстрации
   const transactions = [
@@ -68,6 +74,19 @@ export function BalanceTab() {
         return 'Ошибка';
       default:
         return 'Неизвестно';
+    }
+  };
+
+  const handleTopUp = async (amount: number) => {
+    setIsProcessing(true);
+    try {
+      // Имитация пополнения баланса
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      onComplete?.();
+    } catch (error) {
+      console.error('Top up failed:', error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -217,6 +236,78 @@ export function BalanceTab() {
             <Link href="/payment" className="btn-outline text-sm px-3 py-1">
               Изменить
             </Link>
+          </div>
+        </div>
+
+        {/* Quick Top Up */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Быстрое пополнение
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[100, 500, 1000, 2000].map((amount) => (
+              <motion.button
+                key={amount}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleTopUp(amount)}
+                disabled={isProcessing}
+                className="p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-500 dark:hover:border-primary-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="text-center">
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {formatCurrency(amount)}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Пополнить
+                  </p>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
+        {/* Payment Methods */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Способы оплаты
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-500 dark:hover:border-primary-500 transition-colors duration-200 cursor-pointer">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded flex items-center justify-center">
+                  <span className="text-blue-600 dark:text-blue-400 font-bold text-sm">V</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">Visa/Mastercard</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Банковские карты</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-500 dark:hover:border-primary-500 transition-colors duration-200 cursor-pointer">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded flex items-center justify-center">
+                  <span className="text-green-600 dark:text-green-400 font-bold text-sm">S</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">СБП</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Система быстрых платежей</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-500 dark:hover:border-primary-500 transition-colors duration-200 cursor-pointer">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded flex items-center justify-center">
+                  <span className="text-purple-600 dark:text-purple-400 font-bold text-sm">Y</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">ЮMoney</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Электронный кошелек</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

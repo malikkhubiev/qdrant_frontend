@@ -182,11 +182,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </button>
             
             <div className="flex items-center space-x-4">
-              <Link href="/payment?type=incoming" className="btn-primary flex items-center">
+              <Link href="/payment?type=incoming" className="btn-primary flex items-center whitespace-nowrap">
                 <PhoneIcon className="w-4 h-4 mr-2" />
                 Принимать звонки
               </Link>
-              <Link href="/payment?type=outgoing" className="btn-outline flex items-center">
+              <Link href="/payment?type=outgoing" className="btn-outline flex items-center whitespace-nowrap">
                 <PhoneIcon className="w-4 h-4 mr-2" />
                 Начать обзвон
               </Link>

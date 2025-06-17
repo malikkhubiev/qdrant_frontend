@@ -6,7 +6,10 @@ import {
   CogIcon, 
   LinkIcon,
   ClockIcon,
-  PhoneIcon 
+  PhoneIcon,
+  CheckIcon,
+  XMarkIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,10 +19,15 @@ import { toast } from 'react-hot-toast';
 import { useAppStore } from '@/lib/store';
 import { parseCSV } from '@/lib/utils';
 
-export function IntegrationsTab() {
+interface IntegrationsTabProps {
+  onComplete?: () => void;
+}
+
+export function IntegrationsTab({ onComplete }: IntegrationsTabProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumbers, setPhoneNumbers] = useState('');
-  const { callSettings, setCallSettings } = useAppStore();
+  const { callSettings, setCallSettings, integrations, setIntegrations } = useAppStore();
+  const [isConnecting, setIsConnecting] = useState<string | null>(null);
 
   const {
     register,
@@ -29,6 +37,37 @@ export function IntegrationsTab() {
   } = useForm<IntegrationFormData>({
     resolver: zodResolver(integrationSchema),
   });
+
+  const availableIntegrations = [
+    {
+      id: 'crm',
+      name: 'CRM система',
+      description: 'Подключение к CRM для синхронизации данных',
+      icon: '📊',
+      status: 'available'
+    },
+    {
+      id: 'telegram',
+      name: 'Telegram Bot',
+      description: 'Уведомления о звонках в Telegram',
+      icon: '📱',
+      status: 'available'
+    },
+    {
+      id: 'email',
+      name: 'Email интеграция',
+      description: 'Отправка отчетов на email',
+      icon: '📧',
+      status: 'available'
+    },
+    {
+      id: 'webhook',
+      name: 'Webhook',
+      description: 'Отправка данных на внешний сервер',
+      icon: '🔗',
+      status: 'available'
+    }
+  ];
 
   const onSubmit = async (data: IntegrationFormData) => {
     setIsLoading(true);
@@ -61,6 +100,41 @@ export function IntegrationsTab() {
         [field]: value,
       },
     });
+  };
+
+  const handleConnect = async (integrationId: string) => {
+    setIsConnecting(integrationId);
+    try {
+      // Имитация подключения
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const integration = availableIntegrations.find(i => i.id === integrationId);
+      if (integration) {
+        const newIntegration = {
+          id: integrationId,
+          name: integration.name,
+          type: integrationId,
+          status: 'connected',
+          connectedAt: new Date().toISOString()
+        };
+        
+        setIntegrations([...integrations, newIntegration]);
+        onComplete?.();
+      }
+    } catch (error) {
+      console.error('Connection failed:', error);
+    } finally {
+      setIsConnecting(null);
+    }
+  };
+
+  const handleDisconnect = (integrationId: string) => {
+    setIntegrations(integrations.filter(i => i.id !== integrationId));
+  };
+
+  const getIntegrationStatus = (integrationId: string) => {
+    const connected = integrations.find(i => i.id === integrationId);
+    return connected ? 'connected' : 'available';
   };
 
   return (
@@ -226,6 +300,75 @@ export function IntegrationsTab() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {availableIntegrations.map((integration) => {
+            const status = getIntegrationStatus(integration.id);
+            const isConnected = status === 'connected';
+            const connectedIntegration = integrations.find(i => i.id === integration.id);
+            
+            return (
+              <motion.div
+                key={integration.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                  isConnected
+                    ? 'border-success-500 bg-success-50 dark:bg-success-900/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                }`}
+              >
+                <div className="flex items-start space-x-3">
+                  <div className="text-2xl">{integration.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-1">
+                      {integration.name}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      {integration.description}
+                    </p>
+                    
+                    {isConnected ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2 text-success-600 dark:text-success-400">
+                          <CheckIcon className="w-4 h-4" />
+                          <span className="text-sm font-medium">Подключено</span>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Подключено: {connectedIntegration?.connectedAt ? new Date(connectedIntegration.connectedAt).toLocaleDateString() : 'Недавно'}
+                        </p>
+                        <button
+                          onClick={() => handleDisconnect(integration.id)}
+                          className="btn-outline text-sm px-3 py-1 whitespace-nowrap"
+                        >
+                          Отключить
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleConnect(integration.id)}
+                        disabled={isConnecting === integration.id}
+                        className="btn-primary text-sm px-3 py-1 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isConnecting === integration.id ? (
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Подключение...</span>
+                          </div>
+                        ) : (
+                          <>
+                            <PlusIcon className="w-3 h-3 mr-1" />
+                            Подключить
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </div>

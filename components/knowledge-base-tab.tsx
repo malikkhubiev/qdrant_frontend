@@ -15,7 +15,11 @@ import { apiClient } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { useAppStore } from '@/lib/store';
 
-export function KnowledgeBaseTab() {
+interface KnowledgeBaseTabProps {
+  onComplete?: () => void;
+}
+
+export function KnowledgeBaseTab({ onComplete }: KnowledgeBaseTabProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const { knowledgeBase, setKnowledgeBase } = useAppStore();
 
@@ -36,6 +40,7 @@ export function KnowledgeBaseTab() {
         setKnowledgeBase(response.data);
         toast.success('База знаний обработана успешно!');
         reset();
+        onComplete?.();
       }
     } catch (error) {
       toast.error('Ошибка при обработке базы знаний');
@@ -48,6 +53,7 @@ export function KnowledgeBaseTab() {
     try {
       await apiClient.updateKnowledgeBase(knowledgeBase);
       toast.success('База знаний загружена в систему!');
+      onComplete?.();
     } catch (error) {
       toast.error('Ошибка при загрузке в систему');
     }
@@ -90,7 +96,7 @@ export function KnowledgeBaseTab() {
         <button
           type="submit"
           disabled={isProcessing}
-          className="w-full btn-primary flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full btn-primary flex items-center justify-center whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isProcessing ? (
             <div className="flex items-center space-x-2">
