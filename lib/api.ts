@@ -1,8 +1,8 @@
 import { QueryClient } from '@tanstack/react-query';
 import { ApiResponse, TestCallRequest, ProcessKnowledgeRequest, ActivateServiceRequest, RegisterRequest, LoginRequest, SendSmsRequest, VerifyCodeRequest, User, KnowledgeItem, Integration, CallSettings, Tariff, PaymentIntent } from '@/types';
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = 'http://localhost:8000';
 
 // Создаем axios инстанс
 const axiosInstance = axios.create({
@@ -13,7 +13,7 @@ const axiosInstance = axios.create({
 });
 
 // Интерцептор для добавления токена
-axiosInstance.interceptors.request.use((config: AxiosRequestConfig) => {
+axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem('token');
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -39,80 +39,43 @@ let fakeUserId = 1;
 
 // Фейковые функции для демонстрации
 export const apiClient = {
-  // Отправка SMS (фейковая)
+  // Отправка SMS (реальный запрос)
   sendSms: async ({ phone }: { phone: string }) => {
-    // Имитируем задержку сети
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // В реальном приложении здесь был бы вызов API
-    console.log(`SMS отправлен на номер: ${phone}`);
-    
-    return { success: true, message: 'SMS отправлен' };
+    console.log('sendSms called', phone);
+    const res = await axiosInstance.post(
+      '/register/request_code',
+      { phone }
+    );
+    console.log('sendSms response', res.data);
+    return res.data;
   },
 
-  // Проверка кода (фейковая)
+  // Проверка кода (реальный запрос)
   verifyCode: async ({ phone, code }: { phone: string; code: string }) => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Принимаем любой 4-значный код для демонстрации
-    if (code.length === 4 && /^\d+$/.test(code)) {
-      return { success: true, message: 'Код подтвержден' };
-    } else {
-      throw new Error('Неверный код');
-    }
+    console.log('verifyCode called', phone, code);
+    const res = await axiosInstance.post(
+      '/register/verify_code',
+      { phone, code }
+    );
+    console.log('verifyCode response', res.data);
+    return res.data;
   },
 
-  // Регистрация (фейковая)
+  // Регистрация (реальный запрос)
   register: async ({ phone, code, password }: { phone: string; code: string; password: string }) => {
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    
-    // Создаем фейкового пользователя
-    const user = {
-      id: `user_${fakeUserId++}`,
-      phone,
-      email: `${phone.replace(/\D/g, '')}@example.com`,
-      name: `Пользователь ${phone}`,
-      company: 'Моя компания',
-      balance: 0,
-      minutesUsed: 0,
-      minutesTotal: 2000,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      settings: {
-        notifications: true,
-        autoRecharge: false,
-        language: 'ru'
-      }
-    };
-    
-    const token = `fake_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    // Сохраняем в localStorage для демонстрации
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    fakeUsers.set(phone, { user, token });
-    
-    return {
-      data: {
-        user,
-        token
-      }
-    };
+    console.log('register called', phone, code, password);
+    const res = await axiosInstance.post(
+      '/register',
+      { phone, code, password }
+    );
+    console.log('register response', res.data);
+    return res.data;
   },
 
-  // Авторизация (фейковая)
+  // Авторизация (реальный запрос)
   login: async ({ phone, password }: { phone: string; password: string }) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Проверяем, есть ли пользователь
-    const existingUser = fakeUsers.get(phone);
-    if (existingUser) {
-      localStorage.setItem('token', existingUser.token);
-      localStorage.setItem('user', JSON.stringify(existingUser.user));
-      return { data: existingUser };
-    }
-    
-    throw new Error('Пользователь не найден');
+    const res = await axiosInstance.post('/login', { phone, password });
+    return res.data;
   },
 
   // Получение профиля пользователя

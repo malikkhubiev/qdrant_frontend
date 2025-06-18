@@ -189,4 +189,28 @@ CMD ["npm", "start"]
 
 ---
 
-**Сделано с ❤️ для автоматизации ваших продаж** 
+**Сделано с ❤️ для автоматизации ваших продаж**
+
+# FastAPI регистрация по телефону с SMS.ru
+
+## Установка зависимостей
+
+```
+pip install -r requirements.txt
+```
+
+## Настройка
+
+1. Получите API ID на [sms.ru](https://sms.ru/).
+2. В файле `main.py` замените `<YOUR_SMSRU_API_ID>` на ваш API ID.
+
+## Запуск
+
+```
+uvicorn main:app --reload
+```
+
+## Эндпоинты
+
+- `POST /register/request_code` — отправка кода на телефон
+- `POST /register/verify_code` — подтверждение кода и регистрация 

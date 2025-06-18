@@ -2,7 +2,6 @@
 
 import { RegisterForm } from '@/components/register-form';
 import { Header } from '@/components/header';
-import { apiClient } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
@@ -12,24 +11,29 @@ export default function RegisterPage() {
   const { setUser, setToken, setAuthenticated } = useAppStore();
 
   const handleDemoLogin = async () => {
-    try {
-      // Создаем демо-пользователя
-      const response = await apiClient.register({
-        phone: '+7 (999) 123-45-67',
-        code: '1234',
-        password: 'demo123456'
-      });
-      
-      if (response.data) {
-        setUser(response.data.user);
-        setToken(response.data.token);
-        setAuthenticated(true);
-        toast.success('Добро пожаловать в демо-режим!');
-        router.push('/dashboard');
-      }
-    } catch (error) {
-      toast.error('Ошибка входа в демо-режим');
-    }
+    // Фейковый пользователь для демо-режима
+    const user = {
+      id: 'demo',
+      phone: '+7 (999) 123-45-67',
+      name: 'Демо пользователь',
+      company: 'Demo',
+      balance: 0,
+      minutesUsed: 0,
+      minutesTotal: 2000,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      settings: {
+        notifications: true,
+        autoRecharge: false,
+        language: 'ru',
+      },
+    };
+    const token = 'demo_token';
+    setUser(user);
+    setToken(token);
+    setAuthenticated(true);
+    toast.success('Добро пожаловать в демо-режим!');
+    router.push('/dashboard');
   };
 
   return (
