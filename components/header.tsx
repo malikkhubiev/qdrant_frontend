@@ -92,15 +92,15 @@ export function Header() {
             ))}
           </div>
 
-          {/* Auth Button - Mobile Layout */}
+          {/* Mobile Auth Button */}
           <div className="md:hidden mt-3 flex justify-center">
             {isAuthenticated ? (
-              <Link href="/dashboard" className="btn-primary">
+              <Link href="/dashboard" className="btn-primary flex items-center">
                 <UserIcon className="w-5 h-5 mr-2" />
                 Личный кабинет
               </Link>
             ) : (
-              <Link href="/register" className="btn-primary">
+              <Link href="/register" className="btn-primary flex items-center">
                 Подключить
               </Link>
             )}
@@ -124,12 +124,12 @@ export function Header() {
 
             {/* Auth Button */}
             {isAuthenticated ? (
-              <Link href="/dashboard" className="btn-primary">
+              <Link href="/dashboard" className="btn-primary flex items-center">
                 <UserIcon className="w-5 h-5 mr-2" />
                 Личный кабинет
               </Link>
             ) : (
-              <Link href="/register" className="btn-primary">
+              <Link href="/register" className="btn-primary flex items-center">
                 Подключить
               </Link>
             )}

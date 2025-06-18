@@ -36,21 +36,23 @@ export default function LoginPage() {
   });
 
   const handleLogin = async (data: LoginFormData) => {
+    console.log('handleLogin called', data);
     setIsLoading(true);
     try {
       const response = await apiClient.login({
         phone: data.phone,
         password: data.password,
       });
-      
-      if (response.data) {
-        setUser(response.data.user);
-        setToken(response.data.token);
+      console.log('login response', response);
+      if (response && response.ok && response.user) {
+        setUser(response.user);
+        setToken('fake_token');
         setAuthenticated(true);
         toast.success('Вход выполнен успешно!');
         router.push('/dashboard');
       }
     } catch (error) {
+      console.log('login error', error);
       toast.error('Неверный номер телефона или пароль');
     } finally {
       setIsLoading(false);
@@ -61,7 +63,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <Header />
       
-      <main className="pt-24 pb-16 px-4">
+      <main className="pt-[150px] pb-16 px-4">
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">

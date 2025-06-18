@@ -59,6 +59,10 @@ async def request_code(data: RequestCodeSchema):
     await database.execute(phone_verifications.delete().where(phone_verifications.c.phone == data.phone))
     # Сохраняю новый код в БД
     await database.execute(phone_verifications.insert().values(phone=data.phone, code=code))
+    # Если номер тестовый (7999...), не отправляем SMS реально
+    if data.phone.startswith('7999'):
+        print(f"[FAKE SMS] Код для {data.phone}: {code}")
+        return {"ok": True, "test_code": code}
     # Отправляю SMS
     async with httpx.AsyncClient() as client:
         response = await client.get(

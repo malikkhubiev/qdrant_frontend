@@ -40,7 +40,7 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <Header />
       
-      <main className="pt-24 pb-16 px-4">
+      <main className="pt-[170px] pb-16 px-4">
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
